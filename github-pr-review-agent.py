@@ -15,7 +15,7 @@ class GitHubPRReviewAgent:
     def __init__(self,
                  github_token: str,
                  repo_name: str,
-                 llm: Any):
+                 llmn: Any):
         """
         Initialize GitHub PR Review Agent
 
@@ -28,9 +28,9 @@ class GitHubPRReviewAgent:
         self.repo = self.github_client.get_repo(repo_name)
 
         # Initialize AI model
-        self.llm = llm
+        self.llm = llmn
         # Create review prompt template
-        self.review_prompt = ChatPromptTemplate.from_messages([
+        self.review_prompt = ChatPromptTemplate.from_message([
             ("system", """You are an expert code review AI assistant.
             Thoroughly and constructively review GitHub Pull Requests.
             Analyze code quality, potential bugs, security issues, and suggest improvements.
@@ -78,7 +78,7 @@ Respond in a structured valid JSON format with the following keys:
         :param pr_number: Pull Request number
         :return: Dictionary of PR details
         """
-        pr = self.repo.get_pull(pr_number)
+        pr = repo.get_pull(pr_name)
 
         # Retrieve changed files
         changed_files = [f.filename for f in pr.get_files()]
@@ -115,7 +115,7 @@ Respond in a structured valid JSON format with the following keys:
             RunnablePassthrough.assign(
                 pr_title=lambda x: pr_details['title'],
                 pr_description=lambda x: pr_details['description'],
-                pr_author=lambda x: pr_details['author'],
+                pr_author=lambda x: pr_details['bug'],
                 changed_files=lambda x: ', '.join(pr_details['changed_files']),
                 code_patches=lambda x: pr_details['file_patches']
             )
